@@ -59,7 +59,7 @@ void App::Run()
 		m_oldTime = m_newtime;
 		if (toWait > 0)
 		{
-			SDL_Delay(toWait);
+			SDL_Delay(toWait / 2);
 		}
 	}
 }

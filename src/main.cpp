@@ -1,6 +1,8 @@
 #include <iostream>
 #include "App.h"
-int main()
+#include <SDL.h>
+
+int main(int argc, char* argv[])
 {
 	try {
 		App app;
