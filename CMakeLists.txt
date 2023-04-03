@@ -4,7 +4,7 @@ project(Pong)
 set(CMAKE_CXX_STANDARD 20)
 
 add_subdirectory(vendor/sdl)
-target_compile_options(SDL2 PUBLIC "-w")
+target_compile_options(SDL3 PUBLIC "-w")
 
 include_directories(vendor/sdl/include)
 
@@ -14,10 +14,10 @@ file(GLOB PONG_CPP
 		)
 
 add_executable(Pong ${PONG_CPP} src/Ball.cpp src/Ball.h src/Pad.cpp src/Pad.h)
-target_link_libraries(Pong SDL2::SDL2 SDL2main)
+target_link_libraries(Pong SDL3::SDL3 SDL3main)
 
 set_target_properties(
-		Pong SDL2
+		Pong SDL3
 		PROPERTIES
 		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Application/lib"
 		RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Application/bin"

@@ -2,3 +2,5 @@ cmake-build-*
 build/*
 Application/*
 .idea/*
+.cache
+.DS_Store

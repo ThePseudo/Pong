@@ -7,7 +7,7 @@ class Ball
 public:
 	Ball() = delete;
 
-	explicit Ball(SDL_Renderer* renderer);
+	explicit Ball(SDL_Renderer *renderer);
 
 	void Render() const;
 
@@ -22,8 +22,7 @@ public:
 	void InvertXVelocity();
 
 private:
-
-	SDL_FRect m_position{ 500, 500, 40, 40 };
-	SDL_FPoint m_velocity{ 200.0f, 200.0f };
-	SDL_Renderer* m_renderer;
+	SDL_FRect m_position{500, 500, 40, 40};
+	SDL_FPoint m_velocity{200.0f, 200.0f};
+	SDL_Renderer *m_renderer;
 };

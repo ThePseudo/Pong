@@ -1,9 +1,11 @@
 #pragma once
 
+#include "Ball.h"
+#include "Pad.h"
+#include "Wall.h"
 #include <SDL.h>
 #include <memory>
-#include "Pad.h"
-#include "Ball.h"
+#include <vector>
 
 struct Settings
 {
@@ -31,18 +33,19 @@ private:
 
 	void CheckAndApplyBallCollisions();
 
-	void CheckAndApplyPadCollisions(const std::shared_ptr<Pad>& pad);
+	void CheckAndApplyPadCollisions(const std::shared_ptr<Pad> &pad);
 
 	void ApplyAI();
 
 	void ApplyUserInput();
 
-	SDL_Window* m_window;
-	SDL_Renderer* m_renderer;
+	SDL_Window *m_window;
+	SDL_Renderer *m_renderer;
 
 	std::shared_ptr<Ball> m_ball;
 	std::shared_ptr<Pad> m_pad1;
 	std::shared_ptr<Pad> m_pad2;
+	std::vector<Wall> m_walls;
 
 	uint64_t m_oldTime;
 	uint64_t m_newtime;
@@ -51,5 +54,4 @@ private:
 
 	bool m_downPressed = false;
 	bool m_upPressed = false;
-
 };

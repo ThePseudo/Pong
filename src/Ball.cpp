@@ -1,15 +1,14 @@
 #include "Ball.h"
-#include <random>
 #include <cstdlib>
+#include <random>
 
-Ball::Ball(SDL_Renderer* renderer) : m_renderer(renderer)
+Ball::Ball(SDL_Renderer *renderer) : m_renderer(renderer)
 {
 	srand(time(nullptr));
 	int num1 = rand() % 2;
 	int num2 = rand() % 2;
 	m_velocity.x = (num1 > 0) ? m_velocity.x : -m_velocity.x;
 	m_velocity.y = (num2 > 0) ? m_velocity.y : -m_velocity.y;
-
 }
 
 void Ball::Render() const

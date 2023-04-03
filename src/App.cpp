@@ -1,16 +1,20 @@
 #include "App.h"
+#include "SDL_rect.h"
+#include "SDL_render.h"
+#include "SDL_video.h"
 
 void App::Init()
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
-	m_window = SDL_CreateWindow("Pong", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH, DEFAULT_HEIGHT,
-			0);
+	m_window =
+		SDL_CreateWindow("Pong", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH, DEFAULT_HEIGHT, 0);
 	m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	m_ball = std::make_shared<Ball>(m_renderer);
 	m_pad1 = std::make_shared<Pad>(100, (DEFAULT_HEIGHT - 100) / 2, m_renderer, 255, 0, 0);
 	m_pad2 = std::make_shared<Pad>(DEFAULT_WIDTH - 140, (DEFAULT_HEIGHT - 100) / 2, m_renderer, 0, 255, 0);
+	m_walls.push_back(Wall(m_renderer, SDL_FRect{0, 0, DEFAULT_WIDTH, 10}));
+	m_walls.push_back(Wall(m_renderer, SDL_FRect{0, DEFAULT_HEIGHT - 10, DEFAULT_WIDTH, 10}));
 	m_oldTime = SDL_GetTicks64();
-
 }
 
 void App::Run()
@@ -25,30 +29,31 @@ void App::Run()
 			{
 				shouldRun = false;
 			}
-			if(event.type == SDL_KEYDOWN)
+			if (event.type == SDL_KEYDOWN)
 			{
-				if(event.key.keysym.sym == SDLK_DOWN)
+				if (event.key.keysym.sym == SDLK_DOWN)
 				{
 					m_downPressed = true;
 				}
-				else if(event.key.keysym.sym == SDLK_UP)
+				else if (event.key.keysym.sym == SDLK_UP)
 				{
 					m_upPressed = true;
 				}
 			}
-			if(event.type == SDL_KEYUP)
+			if (event.type == SDL_KEYUP)
 			{
-				if(event.key.keysym.sym == SDLK_DOWN)
+				if (event.key.keysym.sym == SDLK_DOWN)
 				{
 					m_downPressed = false;
 				}
-				else if(event.key.keysym.sym == SDLK_UP)
+				else if (event.key.keysym.sym == SDLK_UP)
 				{
 					m_upPressed = false;
 				}
 			}
 		}
-		if (!shouldRun) break;
+		if (!shouldRun)
+			break;
 		m_newtime = SDL_GetTicks64();
 		ApplyUserInput();
 		ApplyAI();
@@ -78,6 +83,13 @@ void App::Render()
 	m_pad1->Render();
 	m_pad2->Render();
 	m_ball->Render();
+	SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
+	int width, height;
+	SDL_GetWindowSize(m_window, &width, &height);
+	for (const auto &wall : m_walls)
+	{
+		wall.Render();
+	}
 	SDL_RenderPresent(m_renderer);
 }
 
@@ -95,19 +107,25 @@ void App::CheckAndApplyCollisions()
 	CheckAndApplyPadCollisions(m_pad2);
 }
 
-void App::CheckAndApplyPadCollisions(const std::shared_ptr<Pad>& pad)
+void App::CheckAndApplyPadCollisions(const std::shared_ptr<Pad> &pad)
 {
 	auto position = pad->GetPosition();
-	if (position.y < 0)
-	{
-		pad->SetPosition(position.x, 0);
-	}
-	else if (position.y + position.h > DEFAULT_HEIGHT)
-	{
-		pad->SetPosition(position.x, DEFAULT_HEIGHT - position.h);
-	}
 	SDL_FRect collisionRect;
 	SDL_FRect ballPosition = m_ball->GetPosition();
+	for (const auto &wall : m_walls)
+	{
+		if (SDL_IntersectFRect(&pad->GetPosition(), &wall.GetPosition(), &collisionRect))
+		{
+			if (pad->GetPosition().y >= collisionRect.y)
+			{
+				pad->SetPosition(pad->GetPosition().x, pad->GetPosition().y + collisionRect.h);
+			}
+			else
+			{
+				pad->SetPosition(pad->GetPosition().x, pad->GetPosition().y - collisionRect.h);
+			}
+		}
+	}
 	if (SDL_IntersectFRect(&position, &ballPosition, &collisionRect) == SDL_TRUE)
 	{
 		m_ball->InvertXVelocity();
@@ -120,7 +138,6 @@ void App::CheckAndApplyPadCollisions(const std::shared_ptr<Pad>& pad)
 			m_ball->SetPosition(position.x + position.w + 0.01f, ballPosition.y);
 		}
 	}
-
 }
 
 void App::CheckAndApplyBallCollisions()
@@ -137,16 +154,32 @@ void App::CheckAndApplyBallCollisions()
 		m_pad2->AddScore();
 		m_ball = std::make_shared<Ball>(m_renderer);
 	}
-	else if (position.y <= 0)
+	SDL_FRect collisionRect;
+	for (const auto &wall : m_walls)
 	{
-		m_ball->InvertYVelocity();
-		m_ball->SetPosition(position.x, 0);
+		if (SDL_IntersectFRect(&position, &wall.GetPosition(), &collisionRect))
+		{
+			m_ball->InvertYVelocity();
+			if (position.y >= collisionRect.y)
+			{
+				m_ball->SetPosition(position.x, position.y + collisionRect.h);
+			}
+			else
+			{
+				m_ball->SetPosition(position.x, position.y - collisionRect.h);
+			}
+		}
 	}
-	else if (position.y + position.h >= DEFAULT_HEIGHT)
-	{
-		m_ball->InvertYVelocity();
-		m_ball->SetPosition(position.x, DEFAULT_HEIGHT - position.h);
-	}
+	// else if (position.y <= 0)
+	//{
+	//	m_ball->InvertYVelocity();
+	//	m_ball->SetPosition(position.x, 0);
+	// }
+	// else if (position.y + position.h >= DEFAULT_HEIGHT)
+	//{
+	//	m_ball->InvertYVelocity();
+	//	m_ball->SetPosition(position.x, DEFAULT_HEIGHT - position.h);
+	// }
 }
 
 void App::ApplyAI()
@@ -165,11 +198,11 @@ void App::ApplyAI()
 
 void App::ApplyUserInput()
 {
-	if(m_downPressed)
+	if (m_downPressed)
 	{
 		m_pad1->SetYVelocity(m_settings.padVelocityY);
 	}
-	if(m_upPressed)
+	if (m_upPressed)
 	{
 		m_pad1->SetYVelocity(-m_settings.padVelocityY);
 	}

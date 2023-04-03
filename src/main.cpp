@@ -1,10 +1,11 @@
-#include <iostream>
 #include "App.h"
 #include <SDL.h>
+#include <iostream>
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
-	try {
+	try
+	{
 		App app;
 		app.Init();
 		app.Run();
