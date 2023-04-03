@@ -2,6 +2,7 @@
 
 #include "Ball.h"
 #include "Pad.h"
+#include "Trigger.h"
 #include "Wall.h"
 #include <SDL.h>
 #include <memory>
@@ -46,6 +47,7 @@ private:
 	std::shared_ptr<Pad> m_pad1;
 	std::shared_ptr<Pad> m_pad2;
 	std::vector<Wall> m_walls;
+	std::vector<Trigger> m_triggers;
 
 	uint64_t m_oldTime;
 	uint64_t m_newtime;

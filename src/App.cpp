@@ -2,6 +2,8 @@
 #include "SDL_rect.h"
 #include "SDL_render.h"
 #include "SDL_video.h"
+#include <iostream>
+#include <memory>
 
 void App::Init()
 {
@@ -14,6 +16,33 @@ void App::Init()
 	m_pad2 = std::make_shared<Pad>(DEFAULT_WIDTH - 140, (DEFAULT_HEIGHT - 100) / 2, m_renderer, 0, 255, 0);
 	m_walls.push_back(Wall(m_renderer, SDL_FRect{0, 0, DEFAULT_WIDTH, 10}));
 	m_walls.push_back(Wall(m_renderer, SDL_FRect{0, DEFAULT_HEIGHT - 10, DEFAULT_WIDTH, 10}));
+	m_triggers.push_back(Trigger(SDL_FRect{0, 0, 10, DEFAULT_HEIGHT}));
+	m_triggers.push_back(Trigger(SDL_FRect{DEFAULT_WIDTH - 10, 0, 10, DEFAULT_HEIGHT}));
+
+	m_triggers[0].SetActivationFunction([&]() {
+		m_pad2->AddScore();
+		std::cout << "Score pad 1: " << m_pad1->GetScore() << std::endl;
+		std::cout << "Score pad 2: " << m_pad2->GetScore() << std::endl;
+		m_ball = std::make_shared<Ball>(m_renderer);
+	});
+
+	m_triggers[1].SetActivationFunction([&]() {
+		m_pad1->AddScore();
+		std::cout << "Score pad 1: " << m_pad1->GetScore() << std::endl;
+		std::cout << "Score pad 2: " << m_pad2->GetScore() << std::endl;
+		m_ball = std::make_shared<Ball>(m_renderer);
+	});
+
+	m_triggers[0].SetActivationCondition([&]() {
+		SDL_FRect temp;
+		return SDL_IntersectFRect(&m_ball->GetPosition(), &m_triggers[0].GetPosition(), &temp);
+	});
+
+	m_triggers[1].SetActivationCondition([&]() {
+		SDL_FRect temp;
+		return SDL_IntersectFRect(&m_ball->GetPosition(), &m_triggers[1].GetPosition(), &temp);
+	});
+
 	m_oldTime = SDL_GetTicks64();
 }
 
@@ -105,6 +134,10 @@ void App::CheckAndApplyCollisions()
 	CheckAndApplyBallCollisions();
 	CheckAndApplyPadCollisions(m_pad1);
 	CheckAndApplyPadCollisions(m_pad2);
+	for (size_t i = 0; i < m_triggers.size(); i++)
+	{
+		m_triggers[i].Activate();
+	}
 }
 
 void App::CheckAndApplyPadCollisions(const std::shared_ptr<Pad> &pad)
@@ -142,18 +175,7 @@ void App::CheckAndApplyPadCollisions(const std::shared_ptr<Pad> &pad)
 
 void App::CheckAndApplyBallCollisions()
 {
-
 	auto position = m_ball->GetPosition();
-	if (position.x <= 0)
-	{
-		m_pad1->AddScore();
-		m_ball = std::make_shared<Ball>(m_renderer);
-	}
-	else if (position.x + position.w >= DEFAULT_WIDTH)
-	{
-		m_pad2->AddScore();
-		m_ball = std::make_shared<Ball>(m_renderer);
-	}
 	SDL_FRect collisionRect;
 	for (const auto &wall : m_walls)
 	{
@@ -170,16 +192,6 @@ void App::CheckAndApplyBallCollisions()
 			}
 		}
 	}
-	// else if (position.y <= 0)
-	//{
-	//	m_ball->InvertYVelocity();
-	//	m_ball->SetPosition(position.x, 0);
-	// }
-	// else if (position.y + position.h >= DEFAULT_HEIGHT)
-	//{
-	//	m_ball->InvertYVelocity();
-	//	m_ball->SetPosition(position.x, DEFAULT_HEIGHT - position.h);
-	// }
 }
 
 void App::ApplyAI()

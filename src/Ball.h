@@ -13,7 +13,7 @@ public:
 
 	void Update(uint64_t deltaTime);
 
-	[[nodiscard]] SDL_FRect GetPosition() const;
+	[[nodiscard]] const SDL_FRect &GetPosition() const;
 
 	void SetPosition(float x, float y);
 

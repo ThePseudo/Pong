@@ -23,7 +23,7 @@ void Ball::Update(const uint64_t deltaTime)
 	m_position.y += m_velocity.y * (float)deltaTime / 1000.0f;
 }
 
-SDL_FRect Ball::GetPosition() const
+const SDL_FRect &Ball::GetPosition() const
 {
 	return m_position;
 }
