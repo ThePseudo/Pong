@@ -6,7 +6,6 @@
 #include "Trigger.h"
 #include "Wall.h"
 #include <SDL.h>
-#include <memory>
 #include <vector>
 
 struct Settings
@@ -37,7 +36,7 @@ private:
 
 	void CheckAndApplyBallCollisions();
 
-	void CheckAndApplyPadCollisions(const std::shared_ptr<Pad> &pad);
+	void CheckAndApplyPadCollisions(Pad &pad);
 
 	void ApplyAI();
 
@@ -46,14 +45,14 @@ private:
 	SDL_Window *m_window;
 	SDL_Renderer *m_renderer;
 
-	std::shared_ptr<Ball> m_ball;
-	std::shared_ptr<Pad> m_pad1;
-	std::shared_ptr<Pad> m_pad2;
-	std::vector<Wall> m_walls;
+	Ball m_ball;
+	Pad m_pad1;
+	Pad m_pad2;
+	std::array<Wall, 2> m_walls;
 	std::vector<Trigger> m_triggers;
 
 	uint64_t m_oldTime;
-	uint64_t m_newtime;
+	uint64_t m_newTime;
 
 	Settings m_settings;
 

@@ -7,7 +7,7 @@
 class Ball
 {
 public:
-	Ball() = delete;
+	Ball() = default;
 
 	explicit Ball(SDL_Renderer *renderer);
 
@@ -32,6 +32,6 @@ public:
 private:
 	SDL_FRect m_position{500, 500, 40, 40};
 	SDL_FPoint m_velocity{200.0f, 200.0f};
-	SDL_Renderer *m_renderer;
-	SDL_Texture *m_texture;
+	SDL_Renderer *m_renderer = nullptr;
+	SDL_Texture *m_texture = nullptr;
 };
