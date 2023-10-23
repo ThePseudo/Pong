@@ -1,6 +1,9 @@
 #include "App.h"
+#include "SDL3_image/SDL_image.h"
 #include "SDL_rect.h"
 #include "SDL_render.h"
+#include "SDL_stdinc.h"
+#include "SDL_surface.h"
 #include "SDL_video.h"
 #include <iostream>
 #include <memory>
@@ -8,12 +11,15 @@
 void App::Init()
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
-	m_window =
-		SDL_CreateWindow("Pong", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WIDTH, DEFAULT_HEIGHT, 0);
-	m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	m_window = SDL_CreateWindow("Pong", DEFAULT_WIDTH, DEFAULT_HEIGHT, 0);
+	m_renderer = SDL_CreateRenderer(m_window, nullptr, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	m_ball = std::make_shared<Ball>(m_renderer);
 	m_pad1 = std::make_shared<Pad>(100, (DEFAULT_HEIGHT - 100) / 2, m_renderer, 255, 0, 0);
 	m_pad2 = std::make_shared<Pad>(DEFAULT_WIDTH - 140, (DEFAULT_HEIGHT - 100) / 2, m_renderer, 0, 255, 0);
+	m_ball->SetTexture(LoadTexture("images/ball.png"));
+	m_pad1->SetTexture(LoadTexture("images/paddlegreen.png"));
+	m_pad2->SetTexture(LoadTexture("images/paddlered.png"));
+
 	m_walls.push_back(Wall(m_renderer, SDL_FRect{0, 0, DEFAULT_WIDTH, 10}));
 	m_walls.push_back(Wall(m_renderer, SDL_FRect{0, DEFAULT_HEIGHT - 10, DEFAULT_WIDTH, 10}));
 	m_triggers.push_back(Trigger(SDL_FRect{0, 0, 10, DEFAULT_HEIGHT}));
@@ -23,27 +29,27 @@ void App::Init()
 		m_pad2->AddScore();
 		std::cout << "Score pad 1: " << m_pad1->GetScore() << std::endl;
 		std::cout << "Score pad 2: " << m_pad2->GetScore() << std::endl;
-		m_ball = std::make_shared<Ball>(m_renderer);
+		m_ball->Reset();
 	});
 
 	m_triggers[1].SetActivationFunction([&]() {
 		m_pad1->AddScore();
 		std::cout << "Score pad 1: " << m_pad1->GetScore() << std::endl;
 		std::cout << "Score pad 2: " << m_pad2->GetScore() << std::endl;
-		m_ball = std::make_shared<Ball>(m_renderer);
+		m_ball->Reset();
 	});
 
 	m_triggers[0].SetActivationCondition([&]() {
 		SDL_FRect temp;
-		return SDL_IntersectFRect(&m_ball->GetPosition(), &m_triggers[0].GetPosition(), &temp);
+		return SDL_GetRectIntersectionFloat(&m_ball->GetPosition(), &m_triggers[0].GetPosition(), &temp);
 	});
 
 	m_triggers[1].SetActivationCondition([&]() {
 		SDL_FRect temp;
-		return SDL_IntersectFRect(&m_ball->GetPosition(), &m_triggers[1].GetPosition(), &temp);
+		return SDL_GetRectIntersectionFloat(&m_ball->GetPosition(), &m_triggers[1].GetPosition(), &temp);
 	});
 
-	m_oldTime = SDL_GetTicks64();
+	m_oldTime = SDL_GetTicks();
 }
 
 void App::Run()
@@ -54,11 +60,11 @@ void App::Run()
 	{
 		while (SDL_PollEvent(&event))
 		{
-			if (event.type == SDL_QUIT)
+			if (event.type == SDL_EVENT_QUIT)
 			{
 				shouldRun = false;
 			}
-			if (event.type == SDL_KEYDOWN)
+			if (event.type == SDL_EVENT_KEY_DOWN)
 			{
 				if (event.key.keysym.sym == SDLK_DOWN)
 				{
@@ -69,7 +75,7 @@ void App::Run()
 					m_upPressed = true;
 				}
 			}
-			if (event.type == SDL_KEYUP)
+			if (event.type == SDL_EVENT_KEY_UP)
 			{
 				if (event.key.keysym.sym == SDLK_DOWN)
 				{
@@ -83,7 +89,7 @@ void App::Run()
 		}
 		if (!shouldRun)
 			break;
-		m_newtime = SDL_GetTicks64();
+		m_newtime = SDL_GetTicks();
 		ApplyUserInput();
 		ApplyAI();
 		Update(m_newtime - m_oldTime);
@@ -142,12 +148,13 @@ void App::CheckAndApplyCollisions()
 
 void App::CheckAndApplyPadCollisions(const std::shared_ptr<Pad> &pad)
 {
+	constexpr double deltaTime = 0.01;
 	auto position = pad->GetPosition();
 	SDL_FRect collisionRect;
 	SDL_FRect ballPosition = m_ball->GetPosition();
 	for (const auto &wall : m_walls)
 	{
-		if (SDL_IntersectFRect(&pad->GetPosition(), &wall.GetPosition(), &collisionRect))
+		if (SDL_GetRectIntersectionFloat(&pad->GetPosition(), &wall.GetPosition(), &collisionRect))
 		{
 			if (pad->GetPosition().y >= collisionRect.y)
 			{
@@ -159,16 +166,22 @@ void App::CheckAndApplyPadCollisions(const std::shared_ptr<Pad> &pad)
 			}
 		}
 	}
-	if (SDL_IntersectFRect(&position, &ballPosition, &collisionRect) == SDL_TRUE)
+	// If ball intersects pad
+	if (SDL_GetRectIntersectionFloat(&position, &ballPosition, &collisionRect) == SDL_TRUE)
 	{
-		m_ball->InvertXVelocity();
-		if (position.x > static_cast<float>(DEFAULT_WIDTH) / 2.0f) // RIGHT SIDE
+		if ((position.x > static_cast<float>(DEFAULT_WIDTH) / 2.0f && m_ball->GetVelocity().x > 0) ||
+			(position.x < static_cast<float>(DEFAULT_WIDTH) / 2.0f && m_ball->GetVelocity().x < 0)) // RIGHT SIDE
 		{
-			m_ball->SetPosition(position.x - ballPosition.w - 0.01f, ballPosition.y);
-		}
-		else
-		{
-			m_ball->SetPosition(position.x + position.w + 0.01f, ballPosition.y);
+			m_ball->InvertXVelocity();
+			// If next ball position .y collides with pad
+			auto nextBallPosition = ballPosition;
+			nextBallPosition.x += deltaTime * m_ball->GetVelocity().x;
+			nextBallPosition.y += deltaTime * m_ball->GetVelocity().y;
+			SDL_GetRectIntersectionFloat(&position, &nextBallPosition, &collisionRect);
+			if (collisionRect.w > 0.001)
+			{
+				m_ball->InvertYVelocity();
+			}
 		}
 	}
 }
@@ -179,7 +192,7 @@ void App::CheckAndApplyBallCollisions()
 	SDL_FRect collisionRect;
 	for (const auto &wall : m_walls)
 	{
-		if (SDL_IntersectFRect(&position, &wall.GetPosition(), &collisionRect))
+		if (SDL_GetRectIntersectionFloat(&position, &wall.GetPosition(), &collisionRect))
 		{
 			m_ball->InvertYVelocity();
 			if (position.y >= collisionRect.y)
@@ -218,4 +231,16 @@ void App::ApplyUserInput()
 	{
 		m_pad1->SetYVelocity(-m_settings.padVelocityY);
 	}
+}
+
+SDL_Texture *App::LoadTexture(const char *path)
+{
+	SDL_Surface *surface = IMG_Load(path);
+	SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, surface);
+	SDL_DestroySurface(surface);
+	if (!texture)
+	{
+		std::cout << "ERROR loading texture: " << path << std::endl;
+	}
+	return texture;
 }

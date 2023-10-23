@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SDL_render.h"
 #include <SDL.h>
 
 class Pad
@@ -10,6 +11,8 @@ public:
 	Pad() = delete;
 
 	void Update(uint64_t deltaTime);
+
+	void SetTexture(SDL_Texture *texture);
 
 	void Render() const;
 
@@ -24,9 +27,10 @@ public:
 	void SetYVelocity(float velocity);
 
 private:
-	SDL_FRect m_position{0, 0, 40, 200};
+	SDL_FRect m_position{0, 0, 60, 200};
 	SDL_FPoint m_velocity{0.0f, 0.0f};
 	SDL_Renderer *m_renderer;
+	SDL_Texture *m_texture;
 	int m_r;
 	int m_g;
 	int m_b;

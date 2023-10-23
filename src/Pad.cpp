@@ -15,7 +15,7 @@ void Pad::Update(const uint64_t deltaTime)
 void Pad::Render() const
 {
 	SDL_SetRenderDrawColor(m_renderer, m_r, m_g, m_b, 255);
-	SDL_RenderFillRectF(m_renderer, &m_position);
+	SDL_RenderFillRect(m_renderer, &m_position);
 }
 
 void Pad::AddScore()
@@ -42,4 +42,9 @@ void Pad::SetPosition(float x, float y)
 void Pad::SetYVelocity(float velocity)
 {
 	m_velocity.y = velocity;
+}
+
+void Pad::SetTexture(SDL_Texture *texture)
+{
+	m_texture = texture;
 }

@@ -9,7 +9,7 @@ Wall::Wall(SDL_Renderer *renderer, SDL_FRect position) : m_renderer(renderer), m
 void Wall::Render() const
 {
 	SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
-	SDL_RenderFillRectF(m_renderer, &m_position);
+	SDL_RenderFillRect(m_renderer, &m_position);
 }
 
 const SDL_FRect &Wall::GetPosition() const

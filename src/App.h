@@ -2,6 +2,7 @@
 
 #include "Ball.h"
 #include "Pad.h"
+#include "SDL_render.h"
 #include "Trigger.h"
 #include "Wall.h"
 #include <SDL.h>
@@ -25,6 +26,8 @@ public:
 private:
 	constexpr static int DEFAULT_WIDTH = 1280;
 	constexpr static int DEFAULT_HEIGHT = 720;
+
+	SDL_Texture *LoadTexture(const char *path);
 
 	void Render();
 
