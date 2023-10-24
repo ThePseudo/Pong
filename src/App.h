@@ -51,7 +51,6 @@ private:
 	Pad m_pad2;
 	MiddleBar m_middleBar;
 	Score m_score;
-	std::vector<Trigger> m_triggers;
 
 	uint64_t m_oldTime;
 	uint64_t m_newTime;

@@ -36,24 +36,6 @@ void App::Init()
 	m_score.AddTexture(LoadTexture("images/7.png"));
 	m_score.AddTexture(LoadTexture("images/8.png"));
 	m_score.AddTexture(LoadTexture("images/9.png"));
-	m_triggers.push_back(Trigger());
-	m_triggers.push_back(Trigger());
-
-	m_triggers[0].SetActivationFunction([&] {
-		m_score.AddScore(1);
-		m_ball.Reset();
-	});
-
-	m_triggers[1].SetActivationFunction([&] {
-		m_score.AddScore(0);
-		m_ball.Reset();
-	});
-
-	m_triggers[0].SetActivationCondition([&] { return m_ball.GetPosition().x < 0; });
-
-	m_triggers[1].SetActivationCondition(
-		[&] { return m_ball.GetPosition().x + m_ball.GetPosition().w > DEFAULT_WIDTH; });
-
 	m_oldTime = SDL_GetTicks();
 }
 
@@ -160,10 +142,6 @@ void App::CheckAndApplyCollisions()
 	CheckAndApplyBallCollisions();
 	CheckAndApplyPadCollisions(m_pad1);
 	CheckAndApplyPadCollisions(m_pad2);
-	for (size_t i = 0; i < m_triggers.size(); i++)
-	{
-		m_triggers[i].Activate();
-	}
 }
 
 void App::CheckAndApplyPadCollisions(Pad &pad)
@@ -210,6 +188,16 @@ void App::CheckAndApplyPadCollisions(Pad &pad)
 void App::CheckAndApplyBallCollisions()
 {
 	auto position = m_ball.GetPosition();
+	if (position.x <= 0)
+	{
+		m_score.AddScore(0);
+		m_ball.Reset();
+	}
+	if (position.x + position.w >= DEFAULT_WIDTH)
+	{
+		m_score.AddScore(1);
+		m_ball.Reset();
+	}
 	if (position.y < 0)
 	{
 		m_ball.SetPosition(position.x, 0);
