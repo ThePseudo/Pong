@@ -16,7 +16,6 @@ src/Pad.cpp
 src/MiddleBar.cpp
 src/Score.cpp
 src/Trigger.cpp
-src/Wall.cpp
 )
 
 target_link_libraries(Pong SDL3::SDL3 SDL3_image::SDL3_image)
