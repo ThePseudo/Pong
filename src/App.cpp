@@ -37,23 +37,23 @@ void App::Init()
 
 	m_walls[0] = Wall(m_renderer, SDL_FRect{0, -10, DEFAULT_WIDTH, 10});
 	m_walls[1] = Wall(m_renderer, SDL_FRect{0, DEFAULT_HEIGHT, DEFAULT_WIDTH, 10});
-	m_triggers.push_back(Trigger(SDL_FRect{0, 0, 10, DEFAULT_HEIGHT}));
-	m_triggers.push_back(Trigger(SDL_FRect{DEFAULT_WIDTH - 10, 0, 10, DEFAULT_HEIGHT}));
+	m_triggers.push_back(Trigger());
+	m_triggers.push_back(Trigger());
 
-	m_triggers[0].SetActivationFunction([&]() {
+	m_triggers[0].SetActivationFunction([&] {
 		m_score.AddScore(1);
 		m_ball.Reset();
 	});
 
-	m_triggers[1].SetActivationFunction([&]() {
+	m_triggers[1].SetActivationFunction([&] {
 		m_score.AddScore(0);
 		m_ball.Reset();
 	});
 
-	m_triggers[0].SetActivationCondition([&]() { return m_ball.GetPosition().x < 0; });
+	m_triggers[0].SetActivationCondition([&] { return m_ball.GetPosition().x < 0; });
 
 	m_triggers[1].SetActivationCondition(
-		[&]() { return m_ball.GetPosition().x + m_ball.GetPosition().w > DEFAULT_WIDTH; });
+		[&] { return m_ball.GetPosition().x + m_ball.GetPosition().w > DEFAULT_WIDTH; });
 
 	m_oldTime = SDL_GetTicks();
 }

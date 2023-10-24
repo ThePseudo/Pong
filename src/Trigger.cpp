@@ -1,19 +1,5 @@
 #include "Trigger.h"
 
-Trigger::Trigger(SDL_FRect position) : m_position(position)
-{
-}
-
-const SDL_FRect &Trigger::GetPosition() const
-{
-	return m_position;
-}
-
-void Trigger::SetPosition(SDL_FRect position)
-{
-	m_position = position;
-}
-
 void Trigger::SetActivationFunction(std::function<void(void)> function)
 {
 	m_activationFunction = function;
