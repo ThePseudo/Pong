@@ -181,16 +181,20 @@ void App::CheckAndApplyPadCollisions(Pad &pad)
 			(position.x < static_cast<float>(DEFAULT_WIDTH) / 2.0f && m_ball.GetVelocity().x < 0)) // RIGHT SIDE
 		{
 			m_ball.InvertXVelocity();
-			// If next ball position .y collides with pad
-			auto nextBallPosition = ballPosition;
-			nextBallPosition.x += deltaTime * m_ball.GetVelocity().x;
-			nextBallPosition.y += deltaTime * m_ball.GetVelocity().y;
-			SDL_GetRectIntersectionFloat(&position, &nextBallPosition, &collisionRect);
-			if (collisionRect.w > 0.001 &&
-				(collisionRect.y <= position.y || collisionRect.y + collisionRect.h >= position.y + position.h))
-			{
-				m_ball.InvertYVelocity();
-			}
+		}
+		// If next ball position .y collides with pad
+		auto nextBallPosition = ballPosition;
+		nextBallPosition.x += deltaTime * m_ball.GetVelocity().x;
+		nextBallPosition.y += deltaTime * m_ball.GetVelocity().y;
+		SDL_GetRectIntersectionFloat(&position, &nextBallPosition, &collisionRect);
+		if (collisionRect.w > 0.001 && collisionRect.y <= position.y && m_ball.GetVelocity().y > 0)
+		{
+			m_ball.InvertYVelocity();
+		}
+		if (collisionRect.w > 0.001 && collisionRect.y + collisionRect.h >= position.y + position.h &&
+			m_ball.GetVelocity().y < 0)
+		{
+			m_ball.InvertYVelocity();
 		}
 	}
 }
