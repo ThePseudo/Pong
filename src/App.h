@@ -5,9 +5,7 @@
 #include "Pad.h"
 #include "SDL_render.h"
 #include "Score.h"
-#include "Trigger.h"
 #include <SDL.h>
-#include <vector>
 
 struct Settings
 {
