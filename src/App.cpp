@@ -5,6 +5,7 @@
 #include "SDL_stdinc.h"
 #include "SDL_surface.h"
 #include "SDL_video.h"
+#include <cmath>
 #include <iostream>
 
 void App::Init()
@@ -34,9 +35,6 @@ void App::Init()
 	m_score.AddTexture(LoadTexture("images/7.png"));
 	m_score.AddTexture(LoadTexture("images/8.png"));
 	m_score.AddTexture(LoadTexture("images/9.png"));
-
-	m_walls[0] = Wall(m_renderer, SDL_FRect{0, -10, DEFAULT_WIDTH, 10});
-	m_walls[1] = Wall(m_renderer, SDL_FRect{0, DEFAULT_HEIGHT, DEFAULT_WIDTH, 10});
 	m_triggers.push_back(Trigger());
 	m_triggers.push_back(Trigger());
 
@@ -129,10 +127,6 @@ void App::Render()
 	SDL_SetRenderDrawColor(m_renderer, 255, 255, 255, 255);
 	int width, height;
 	SDL_GetWindowSize(m_window, &width, &height);
-	for (const auto &wall : m_walls)
-	{
-		wall.Render();
-	}
 	SDL_RenderPresent(m_renderer);
 }
 
@@ -156,43 +150,39 @@ void App::CheckAndApplyCollisions()
 
 void App::CheckAndApplyPadCollisions(Pad &pad)
 {
+	constexpr static float SQRT2 = 1.41421356237;
 	constexpr double deltaTime = 0.01;
 	auto position = pad.GetPosition();
 	SDL_FRect collisionRect;
 	SDL_FRect ballPosition = m_ball.GetPosition();
-	for (const auto &wall : m_walls)
+	if (pad.GetPosition().y < 0)
 	{
-		if (SDL_GetRectIntersectionFloat(&pad.GetPosition(), &wall.GetPosition(), &collisionRect))
-		{
-			if (pad.GetPosition().y >= collisionRect.y)
-			{
-				pad.SetPosition(pad.GetPosition().x, pad.GetPosition().y + collisionRect.h);
-			}
-			else
-			{
-				pad.SetPosition(pad.GetPosition().x, pad.GetPosition().y - collisionRect.h);
-			}
-		}
+		pad.SetPosition(pad.GetPosition().x, 0);
+	}
+	if (pad.GetPosition().y + pad.GetPosition().h > DEFAULT_HEIGHT)
+	{
+		pad.SetPosition(pad.GetPosition().x, DEFAULT_HEIGHT - pad.GetPosition().h);
 	}
 	// If ball intersects pad
 	if (SDL_GetRectIntersectionFloat(&position, &ballPosition, &collisionRect) == SDL_TRUE)
 	{
-		if ((position.x > static_cast<float>(DEFAULT_WIDTH) / 2.0f && m_ball.GetVelocity().x > 0) ||
-			(position.x < static_cast<float>(DEFAULT_WIDTH) / 2.0f && m_ball.GetVelocity().x < 0)) // RIGHT SIDE
+		auto velocity = m_ball.GetBaseVelocity();
+		auto center = SDL_FPoint{position.x + position.w / 2, position.y + position.h / 2};
+		auto centerBall = SDL_FPoint{ballPosition.x + ballPosition.w / 2, ballPosition.y + ballPosition.h / 2};
+		auto angle = atan((centerBall.y - center.y) / (centerBall.x - center.x));
+		angle = fmin(angle, SDL_PI_F / 2.0f - 0.01);
+		angle = fmax(angle, -SDL_PI_F / 2.0f + 0.01);
+		m_ball.SetVelocity(SDL_FPoint{cos(angle) * velocity.x * 2 / SQRT2, sin(angle) * velocity.y * 2 / SQRT2});
+		if (position.x > DEFAULT_WIDTH / 2.0f)
 		{
 			m_ball.InvertXVelocity();
+			m_ball.InvertYVelocity();
 		}
-		// If next ball position .y collides with pad
-		auto nextBallPosition = ballPosition;
-		nextBallPosition.x += deltaTime * m_ball.GetVelocity().x;
-		nextBallPosition.y += deltaTime * m_ball.GetVelocity().y;
-		SDL_GetRectIntersectionFloat(&position, &nextBallPosition, &collisionRect);
-		if (collisionRect.w > 0.001 && collisionRect.y <= position.y && m_ball.GetVelocity().y > 0)
+		if (position.y > ballPosition.y && m_ball.GetVelocity().y > 0)
 		{
 			m_ball.InvertYVelocity();
 		}
-		if (collisionRect.w > 0.001 && collisionRect.y + collisionRect.h >= position.y + position.h &&
-			m_ball.GetVelocity().y < 0)
+		if (position.y + position.h < ballPosition.y + ballPosition.h && m_ball.GetVelocity().y < 0)
 		{
 			m_ball.InvertYVelocity();
 		}
@@ -202,20 +192,20 @@ void App::CheckAndApplyPadCollisions(Pad &pad)
 void App::CheckAndApplyBallCollisions()
 {
 	auto position = m_ball.GetPosition();
-	SDL_FRect collisionRect;
-	for (const auto &wall : m_walls)
+	if (position.y < 0)
 	{
-		if (SDL_GetRectIntersectionFloat(&position, &wall.GetPosition(), &collisionRect))
+		m_ball.SetPosition(position.x, 0);
+		if (m_ball.GetVelocity().y < 0)
 		{
 			m_ball.InvertYVelocity();
-			if (position.y >= collisionRect.y)
-			{
-				m_ball.SetPosition(position.x, position.y + collisionRect.h);
-			}
-			else
-			{
-				m_ball.SetPosition(position.x, position.y - collisionRect.h);
-			}
+		}
+	}
+	if (position.y + position.h > DEFAULT_HEIGHT)
+	{
+		m_ball.SetPosition(position.x, DEFAULT_HEIGHT - position.h);
+		if (m_ball.GetBaseVelocity().y > 0)
+		{
+			m_ball.InvertYVelocity();
 		}
 	}
 }

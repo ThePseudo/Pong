@@ -64,7 +64,17 @@ void Ball::Reset()
 	// srand(time(nullptr));
 	int num1 = rand() % 2;
 	int num2 = rand() % 2;
-	m_velocity.x = (num1 > 0) ? m_velocity.x : -m_velocity.x;
-	m_velocity.y = (num2 > 0) ? m_velocity.y : -m_velocity.y;
+	m_velocity.x = (num1 > 0) ? BASE_VELOCITY.x : -BASE_VELOCITY.x;
+	m_velocity.y = (num2 > 0) ? BASE_VELOCITY.y : -BASE_VELOCITY.y;
 	m_position = SDL_FRect{500, 500, 40, 40};
+}
+
+void Ball::SetVelocity(SDL_FPoint velocity)
+{
+	m_velocity = velocity;
+}
+
+SDL_FPoint Ball::GetBaseVelocity()
+{
+	return BASE_VELOCITY;
 }

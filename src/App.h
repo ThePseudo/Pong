@@ -52,7 +52,6 @@ private:
 	Pad m_pad2;
 	MiddleBar m_middleBar;
 	Score m_score;
-	std::array<Wall, 2> m_walls;
 	std::vector<Trigger> m_triggers;
 
 	uint64_t m_oldTime;

@@ -25,13 +25,18 @@ public:
 
 	void SetPosition(float x, float y);
 
+	void SetVelocity(SDL_FPoint velocity);
+
+	SDL_FPoint GetBaseVelocity();
+
 	void InvertYVelocity();
 
 	void InvertXVelocity();
 
 private:
+	constexpr static SDL_FPoint BASE_VELOCITY = {400.0f, 400.0f};
 	SDL_FRect m_position{500, 500, 40, 40};
-	SDL_FPoint m_velocity{400.0f, 400.0f};
+	SDL_FPoint m_velocity = BASE_VELOCITY;
 	SDL_Renderer *m_renderer = nullptr;
 	SDL_Texture *m_texture = nullptr;
 };
