@@ -58,6 +58,10 @@ private:
 
 	Settings m_settings;
 
+	bool m_multiplayer = false;
+
 	bool m_downPressed = false;
 	bool m_upPressed = false;
+	bool m_LdownPressed = false;
+	bool m_LupPressed = false;
 };

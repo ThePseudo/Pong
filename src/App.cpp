@@ -1,5 +1,6 @@
 #include "App.h"
 #include "SDL3_image/SDL_image.h"
+#include "SDL_keycode.h"
 #include "SDL_rect.h"
 #include "SDL_render.h"
 #include "SDL_stdinc.h"
@@ -70,24 +71,38 @@ void App::Run()
 			}
 			if (event.type == SDL_EVENT_KEY_DOWN)
 			{
-				if (event.key.keysym.sym == SDLK_DOWN)
+				switch (event.key.keysym.sym)
 				{
+				case SDLK_DOWN:
 					m_downPressed = true;
-				}
-				else if (event.key.keysym.sym == SDLK_UP)
-				{
+					break;
+				case SDLK_UP:
 					m_upPressed = true;
+					break;
+				case SDLK_w:
+					m_LupPressed = true;
+					break;
+				case SDLK_s:
+					m_LdownPressed = true;
+					break;
 				}
 			}
 			if (event.type == SDL_EVENT_KEY_UP)
 			{
-				if (event.key.keysym.sym == SDLK_DOWN)
+				switch (event.key.keysym.sym)
 				{
+				case SDLK_DOWN:
 					m_downPressed = false;
-				}
-				else if (event.key.keysym.sym == SDLK_UP)
-				{
+					break;
+				case SDLK_UP:
 					m_upPressed = false;
+					break;
+				case SDLK_w:
+					m_LupPressed = false;
+					break;
+				case SDLK_s:
+					m_LdownPressed = false;
+					break;
 				}
 			}
 		}
@@ -95,7 +110,10 @@ void App::Run()
 			break;
 		m_newTime = SDL_GetTicks();
 		ApplyUserInput();
-		ApplyAI();
+		if (!m_multiplayer)
+		{
+			ApplyAI();
+		}
 		Update(m_newTime - m_oldTime);
 		CheckAndApplyCollisions();
 		Render();
@@ -226,11 +244,23 @@ void App::ApplyAI()
 
 void App::ApplyUserInput()
 {
-	if (m_downPressed)
+	if (m_multiplayer)
+	{
+		if (m_downPressed)
+		{
+			m_pad2.SetYVelocity(m_settings.padVelocityY);
+		}
+		if (m_upPressed)
+		{
+			m_pad2.SetYVelocity(-m_settings.padVelocityY);
+		}
+	}
+
+	if (m_LdownPressed)
 	{
 		m_pad1.SetYVelocity(m_settings.padVelocityY);
 	}
-	if (m_upPressed)
+	if (m_LupPressed)
 	{
 		m_pad1.SetYVelocity(-m_settings.padVelocityY);
 	}
