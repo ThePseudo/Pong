@@ -2,7 +2,6 @@
 #include "SDL_rect.h"
 #include "SDL_render.h"
 #include <cstdlib>
-#include <random>
 
 Ball::Ball(SDL_Renderer *renderer) : m_renderer(renderer)
 {

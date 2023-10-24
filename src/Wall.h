@@ -1,7 +1,7 @@
 #pragma once
 
-#include "SDL.h"
 #include "SDL_render.h"
+
 class Wall
 {
 public:
