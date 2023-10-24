@@ -6,7 +6,6 @@
 #include "SDL_render.h"
 #include "Score.h"
 #include "Trigger.h"
-#include "Wall.h"
 #include <SDL.h>
 #include <vector>
 
