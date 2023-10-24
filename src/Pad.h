@@ -34,5 +34,4 @@ private:
 	int m_r;
 	int m_g;
 	int m_b;
-	int m_score = 0;
 };

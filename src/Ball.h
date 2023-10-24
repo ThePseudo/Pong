@@ -31,7 +31,7 @@ public:
 
 private:
 	SDL_FRect m_position{500, 500, 40, 40};
-	SDL_FPoint m_velocity{200.0f, 200.0f};
+	SDL_FPoint m_velocity{400.0f, 400.0f};
 	SDL_Renderer *m_renderer = nullptr;
 	SDL_Texture *m_texture = nullptr;
 };

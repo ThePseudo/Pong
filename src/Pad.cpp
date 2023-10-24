@@ -23,16 +23,6 @@ void Pad::Render() const
 	}
 }
 
-void Pad::AddScore()
-{
-	m_score++;
-}
-
-int Pad::GetScore() const
-{
-	return m_score;
-}
-
 const SDL_FRect &Pad::GetPosition() const
 {
 	return m_position;

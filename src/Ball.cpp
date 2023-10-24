@@ -62,7 +62,7 @@ void Ball::SetTexture(SDL_Texture *texture)
 
 void Ball::Reset()
 {
-	srand(time(nullptr));
+	// srand(time(nullptr));
 	int num1 = rand() % 2;
 	int num2 = rand() % 2;
 	m_velocity.x = (num1 > 0) ? m_velocity.x : -m_velocity.x;

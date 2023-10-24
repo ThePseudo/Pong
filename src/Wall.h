@@ -11,6 +11,6 @@ public:
 	const SDL_FRect &GetPosition() const;
 
 private:
-	SDL_FRect m_position;
+	SDL_FRect m_position = {0, 0, 0, 0};
 	SDL_Renderer *m_renderer;
 };

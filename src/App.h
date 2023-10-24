@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Ball.h"
+#include "MiddleBar.h"
 #include "Pad.h"
 #include "SDL_render.h"
+#include "Score.h"
 #include "Trigger.h"
 #include "Wall.h"
 #include <SDL.h>
@@ -10,7 +12,7 @@
 
 struct Settings
 {
-	const float padVelocityY = 150.0f;
+	const float padVelocityY = 350.0f;
 };
 
 class App
@@ -48,6 +50,8 @@ private:
 	Ball m_ball;
 	Pad m_pad1;
 	Pad m_pad2;
+	MiddleBar m_middleBar;
+	Score m_score;
 	std::array<Wall, 2> m_walls;
 	std::vector<Trigger> m_triggers;
 

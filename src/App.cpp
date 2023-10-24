@@ -6,48 +6,54 @@
 #include "SDL_surface.h"
 #include "SDL_video.h"
 #include <iostream>
-#include <memory>
 
 void App::Init()
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
 	m_window = SDL_CreateWindow("Pong", DEFAULT_WIDTH, DEFAULT_HEIGHT, 0);
 	m_renderer = SDL_CreateRenderer(m_window, nullptr, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+
+	// Init objects
 	m_ball = Ball(m_renderer);
-	m_pad1 = Pad(100, (DEFAULT_HEIGHT - 100) / 2, m_renderer, 255, 0, 0);
-	m_pad2 = Pad(DEFAULT_WIDTH - 140, (DEFAULT_HEIGHT - 100) / 2, m_renderer, 0, 255, 0);
+	m_pad1 = Pad(100, static_cast<int>((DEFAULT_HEIGHT - 100) / 2), m_renderer, 255, 0, 0);
+	m_pad2 = Pad(DEFAULT_WIDTH - 140, static_cast<int>((DEFAULT_HEIGHT - 100) / 2), m_renderer, 0, 255, 0);
+	m_middleBar = MiddleBar(m_renderer);
+	m_score = Score(m_renderer);
+	// Set textures
 	m_ball.SetTexture(LoadTexture("images/ball.png"));
 	m_pad1.SetTexture(LoadTexture("images/paddlegreen.png"));
 	m_pad2.SetTexture(LoadTexture("images/paddlered.png"));
+	m_middleBar.SetTexture(LoadTexture("images/paddlewhite.png"));
+	m_score.AddTexture(LoadTexture("images/0.png"));
+	m_score.AddTexture(LoadTexture("images/1.png"));
+	m_score.AddTexture(LoadTexture("images/2.png"));
+	m_score.AddTexture(LoadTexture("images/3.png"));
+	m_score.AddTexture(LoadTexture("images/4.png"));
+	m_score.AddTexture(LoadTexture("images/5.png"));
+	m_score.AddTexture(LoadTexture("images/6.png"));
+	m_score.AddTexture(LoadTexture("images/7.png"));
+	m_score.AddTexture(LoadTexture("images/8.png"));
+	m_score.AddTexture(LoadTexture("images/9.png"));
 
-	m_walls[0] = Wall(m_renderer, SDL_FRect{0, 0, DEFAULT_WIDTH, 10});
-	m_walls[1] = Wall(m_renderer, SDL_FRect{0, DEFAULT_HEIGHT - 10, DEFAULT_WIDTH, 10});
+	m_walls[0] = Wall(m_renderer, SDL_FRect{0, -10, DEFAULT_WIDTH, 10});
+	m_walls[1] = Wall(m_renderer, SDL_FRect{0, DEFAULT_HEIGHT, DEFAULT_WIDTH, 10});
 	m_triggers.push_back(Trigger(SDL_FRect{0, 0, 10, DEFAULT_HEIGHT}));
 	m_triggers.push_back(Trigger(SDL_FRect{DEFAULT_WIDTH - 10, 0, 10, DEFAULT_HEIGHT}));
 
 	m_triggers[0].SetActivationFunction([&]() {
-		m_pad2.AddScore();
-		std::cout << "Score pad 1: " << m_pad1.GetScore() << std::endl;
-		std::cout << "Score pad 2: " << m_pad2.GetScore() << std::endl;
+		m_score.AddScore(1);
 		m_ball.Reset();
 	});
 
 	m_triggers[1].SetActivationFunction([&]() {
-		m_pad1.AddScore();
-		std::cout << "Score pad 1: " << m_pad1.GetScore() << std::endl;
-		std::cout << "Score pad 2: " << m_pad2.GetScore() << std::endl;
+		m_score.AddScore(0);
 		m_ball.Reset();
 	});
 
-	m_triggers[0].SetActivationCondition([&]() {
-		SDL_FRect temp;
-		return SDL_GetRectIntersectionFloat(&m_ball.GetPosition(), &m_triggers[0].GetPosition(), &temp);
-	});
+	m_triggers[0].SetActivationCondition([&]() { return m_ball.GetPosition().x < 0; });
 
-	m_triggers[1].SetActivationCondition([&]() {
-		SDL_FRect temp;
-		return SDL_GetRectIntersectionFloat(&m_ball.GetPosition(), &m_triggers[1].GetPosition(), &temp);
-	});
+	m_triggers[1].SetActivationCondition(
+		[&]() { return m_ball.GetPosition().x + m_ball.GetPosition().w > DEFAULT_WIDTH; });
 
 	m_oldTime = SDL_GetTicks();
 }
@@ -99,7 +105,7 @@ void App::Run()
 		m_oldTime = m_newTime;
 		if (toWait > 0)
 		{
-			SDL_Delay(toWait / 2);
+			SDL_Delay(toWait);
 		}
 	}
 }
@@ -115,6 +121,8 @@ void App::Render()
 {
 	SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
 	SDL_RenderClear(m_renderer);
+	m_middleBar.Render(SDL_Point{DEFAULT_WIDTH, DEFAULT_HEIGHT});
+	m_score.Render();
 	m_pad1.Render();
 	m_pad2.Render();
 	m_ball.Render();

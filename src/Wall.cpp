@@ -1,8 +1,7 @@
 #include "Wall.h"
 #include "SDL_render.h"
-#include <algorithm>
 
-Wall::Wall(SDL_Renderer *renderer, SDL_FRect position) : m_renderer(renderer), m_position(std::move(position))
+Wall::Wall(SDL_Renderer *renderer, SDL_FRect position) : m_renderer(renderer), m_position(position)
 {
 }
 
