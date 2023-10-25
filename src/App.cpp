@@ -190,12 +190,12 @@ void App::CheckAndApplyBallCollisions()
 	auto position = m_ball.GetPosition();
 	if (position.x <= 0)
 	{
-		m_score.AddScore(0);
+		m_score.AddScore(1);
 		m_ball.Reset();
 	}
 	if (position.x + position.w >= DEFAULT_WIDTH)
 	{
-		m_score.AddScore(1);
+		m_score.AddScore(0);
 		m_ball.Reset();
 	}
 	if (position.y < 0)

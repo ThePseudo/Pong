@@ -4,5 +4,6 @@
         "paddlered",
         "paddlewhite",
         "PRESENTVSYNC"
-    ]
+    ],
+    "dotnet.defaultSolution": "disable"
 }
